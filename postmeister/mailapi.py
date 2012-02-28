@@ -65,7 +65,7 @@ class MailAPI(object):
         self.charset.header_encoding = QP
         self.charset.body_encoding = QP
 
-    def mail(self, to, subject, tmplname, **kw):
+    def mail(self, to, subject, tmplname, from_addr=None, **kw):
         """send an email
 
         :param to: a simple string in RFC 822 format
@@ -83,7 +83,10 @@ class MailAPI(object):
         msg.set_payload(payload.encode("utf8"))
         msg.set_charset(self.charset)
         msg['Subject'] = Header(subject, "utf8")
-        msg['From'] = self.from_addr
+        if from_addr is None:
+            msg['From'] = self.from_addr
+        else:
+            msg['From'] = from_addr
         msg['To'] = to
 
         self.server.connect()

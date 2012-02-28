@@ -26,9 +26,5 @@ setup(name='postmeister',
       entry_points="""
         [console_scripts]
         run = starflyer.scripts:run
-        [starflyer_app_factory]
-        default = postverteiler.main:app_factory
-        [starflyer_setup]
-        default = postverteiler.setup:setup
       """,
       )
