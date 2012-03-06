@@ -14,7 +14,9 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email.charset import Charset, QP
 from email.message import Message
-from email.encoders import encode_quopri
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 
 from jinja2 import Environment, PackageLoader, TemplateNotFound
 
@@ -66,7 +68,7 @@ class MailAPI(object):
         self.charset.body_encoding = QP
 
     def mail(self, to, subject, tmplname, from_addr=None, **kw):
-        """send an email
+        """send a plain text email
 
         :param to: a simple string in RFC 822 format
         :param subject: The subject of the email
@@ -88,6 +90,43 @@ class MailAPI(object):
         else:
             msg['From'] = from_addr
         msg['To'] = to
+
+        self.server.connect()
+        self.server.sendmail(self.from_addr, [to], msg.as_string())
+        self.server.quit()
+
+
+    def mail_html(self, to, subject, tmplname_txt, tmplname_html, from_addr=None, **kw):
+        """send a HTML and plain text email
+
+        :param to: a simple string in RFC 822 format
+        :param subject: The subject of the email
+        :param tmplname_txt: template name to be used for the plain text version (not used if None)
+        :param tmplname_html: template name to be used for the HTML version (not used if None)
+        :param **kw: parameters to be used in the templates
+        """
+
+        # render template
+        tmpl_txt = self.templates.get_template(tmplname_txt)
+        tmpl_html = self.templates.get_template(tmplname_html)
+        payload_txt = tmpl_txt.render(kw)
+        payload_html = tmpl_html.render(kw)
+
+
+        # now create the message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = Header(subject, "utf8")
+        if from_addr is None:
+            msg['From'] = self.from_addr
+        else:
+            msg['From'] = from_addr
+        msg['To'] = to
+
+        part1 = MIMEText(payload_txt.encode('utf-8'), 'plain', 'utf-8')
+        part2 = MIMEText(payload_html.encode('utf-8'), 'html', 'utf-8')
+
+        msg.attach(part1)
+        msg.attach(part2)
 
         self.server.connect()
         self.server.sendmail(self.from_addr, [to], msg.as_string())
