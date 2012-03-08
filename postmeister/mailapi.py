@@ -16,6 +16,7 @@ from email.charset import Charset, QP
 from email.message import Message
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import email
 
 
 from jinja2 import Environment, PackageLoader, TemplateNotFound
@@ -44,8 +45,10 @@ class DummyServer(object):
         self.mails.append(m) # msg actually contains everything
         if self.printout:
             print "--------"
-            print to
-            print msg
+            print "To: ", to
+            msg = email.message_from_string(msg)
+            for part in msg.walk():
+                print part.get_payload(decode=True)
             print "--------"
 
 class MailAPI(object):
