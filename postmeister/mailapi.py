@@ -54,7 +54,7 @@ class DummyServer(object):
 class MailAPI(object):
     """a mail API"""
 
-    def __init__(self, server, encoding="utf-8", templates=None, from_addr = None):
+    def __init__(self, server, encoding="utf-8", templates=None, from_addr = "noreply@example.org", from_name="System"):
         """initialize the mail API.
 
         :param server: an smtplib.SMTP server or a component implementing ``connect()``, ``sendmail()`` and ``quit()``
@@ -65,12 +65,13 @@ class MailAPI(object):
         self.server = server
         self.templates = templates
         self.from_addr = from_addr
+        self.from_name = from_name
 
         self.charset = Charset("utf-8")
         self.charset.header_encoding = QP
         self.charset.body_encoding = QP
 
-    def mail(self, to, subject, tmplname, from_addr=None, **kw):
+    def mail(self, to, subject, tmplname, from_addr=None, from_name = None, **kw):
         """send a plain text email
 
         :param to: a simple string in RFC 822 format
@@ -88,10 +89,12 @@ class MailAPI(object):
         msg.set_payload(payload.encode("utf8"))
         msg.set_charset(self.charset)
         msg['Subject'] = Header(subject, "utf8")
+        if from_name is None:
+            from_name = self.from_name
         if from_addr is None:
-            fa = msg['From'] = self.from_addr
+            fa = msg['From'] = "%s <%s>" %(from_name, self.from_addr)
         else:
-            fa = msg['From'] = from_addr
+            fa = msg['From'] = "%s <%s>" %(from_name, from_addr)
         msg['To'] = to
 
         self.server.connect()
@@ -119,10 +122,12 @@ class MailAPI(object):
         # now create the message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header(subject, "utf8")
+        if from_name is None:
+            from_name = self.from_name
         if from_addr is None:
-            fa = msg['From'] = self.from_addr
+            fa = msg['From'] = "%s <%s>" %(from_name, self.from_addr)
         else:
-            fa = msg['From'] = from_addr
+            fa = msg['From'] = "%s <%s>" %(from_name, from_addr)
         msg['To'] = to
 
         part1 = MIMEText(payload_txt.encode('utf-8'), 'plain', 'utf-8')
