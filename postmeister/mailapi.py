@@ -102,7 +102,7 @@ class MailAPI(object):
         self.server.quit()
 
 
-    def mail_html(self, to, subject, tmplname_txt, tmplname_html, from_addr=None, **kw):
+    def mail_html(self, to, subject, tmplname_txt, tmplname_html, from_addr=None, from_name = None, **kw):
         """send a HTML and plain text email
 
         :param to: a simple string in RFC 822 format
