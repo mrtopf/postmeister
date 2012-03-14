@@ -64,7 +64,7 @@ class MailAPI(object):
         """
         self.server = server
         self.templates = templates
-        self.from_addr = None
+        self.from_addr = from_addr
 
         self.charset = Charset("utf-8")
         self.charset.header_encoding = QP
@@ -89,13 +89,13 @@ class MailAPI(object):
         msg.set_charset(self.charset)
         msg['Subject'] = Header(subject, "utf8")
         if from_addr is None:
-            msg['From'] = self.from_addr
+            fa = msg['From'] = self.from_addr
         else:
-            msg['From'] = from_addr
+            fa = msg['From'] = from_addr
         msg['To'] = to
 
         self.server.connect()
-        self.server.sendmail(self.from_addr, [to], msg.as_string())
+        self.server.sendmail(fa, [to], msg.as_string())
         self.server.quit()
 
 
@@ -120,9 +120,9 @@ class MailAPI(object):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header(subject, "utf8")
         if from_addr is None:
-            msg['From'] = self.from_addr
+            fa = msg['From'] = self.from_addr
         else:
-            msg['From'] = from_addr
+            fa = msg['From'] = from_addr
         msg['To'] = to
 
         part1 = MIMEText(payload_txt.encode('utf-8'), 'plain', 'utf-8')
@@ -132,7 +132,7 @@ class MailAPI(object):
         msg.attach(part2)
 
         self.server.connect()
-        self.server.sendmail(self.from_addr, [to], msg.as_string())
+        self.server.sendmail(fa, [to], msg.as_string())
         self.server.quit()
 
 
