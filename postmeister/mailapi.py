@@ -145,7 +145,7 @@ class MailAPI(object):
         msg.attach(part1)
         msg.attach(part2)
 
-        self.server.connect()
+        self.server.connect(self.host, self.port)
         self.server.sendmail(fa, [to], msg.as_string())
         self.server.quit()
 
