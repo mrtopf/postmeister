@@ -54,7 +54,13 @@ class DummyServer(object):
 class MailAPI(object):
     """a mail API"""
 
-    def __init__(self, server, encoding="utf-8", templates=None, from_addr = "noreply@example.org", from_name="System"):
+    def __init__(self, server, 
+            encoding="utf-8", 
+            templates=None, 
+            from_addr = "noreply@example.org", 
+            from_name="System",
+            host = "localhost", 
+            port=25):
         """initialize the mail API.
 
         :param server: an smtplib.SMTP server or a component implementing ``connect()``, ``sendmail()`` and ``quit()``
@@ -70,6 +76,9 @@ class MailAPI(object):
         self.charset = Charset("utf-8")
         self.charset.header_encoding = QP
         self.charset.body_encoding = QP
+
+        self.host = host
+        self.port = port
 
     def mail(self, to, subject, tmplname, from_addr=None, from_name = None, **kw):
         """send a plain text email
@@ -97,7 +106,7 @@ class MailAPI(object):
             fa = msg['From'] = "%s <%s>" %(from_name, from_addr)
         msg['To'] = to
 
-        self.server.connect()
+        self.server.connect(self.host, self.port)
         self.server.sendmail(fa, [to], msg.as_string())
         self.server.quit()
 
