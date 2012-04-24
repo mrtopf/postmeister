@@ -7,7 +7,6 @@ Mail API
 
 __all__ = ['DummyServer', 'MailAPI']
 
-
 import urlparse
 import smtplib
 from email.mime.text import MIMEText
@@ -48,19 +47,18 @@ class DummyServer(object):
             print "To: ", to
             msg = email.message_from_string(msg)
             for part in msg.walk():
-                print part.get_payload(decode=True)
+                print 1, part.get_payload(decode=True), 2
             print "--------"
 
 class MailAPI(object):
     """a mail API"""
 
-    def __init__(self, server, 
+    def __init__(self,
             encoding="utf-8", 
             templates=None, 
             from_addr = "noreply@example.org", 
             from_name="System",
-            host = "localhost", 
-            port=25):
+            server_factory = smtplib.SMTP):
         """initialize the mail API.
 
         :param server: an smtplib.SMTP server or a component implementing ``connect()``, ``sendmail()`` and ``quit()``
@@ -68,7 +66,6 @@ class MailAPI(object):
         :param templates: The jinja2 template environment to use
         :param from_addr: the full name of the sender
         """
-        self.server = server
         self.templates = templates
         self.from_addr = from_addr
         self.from_name = from_name
@@ -77,8 +74,7 @@ class MailAPI(object):
         self.charset.header_encoding = QP
         self.charset.body_encoding = QP
 
-        self.host = host
-        self.port = port
+        self.server_factory = server_factory
 
     def mail(self, to, subject, tmplname, from_addr=None, from_name = None, **kw):
         """send a plain text email
@@ -106,9 +102,9 @@ class MailAPI(object):
             fa = msg['From'] = "%s <%s>" %(from_name, from_addr)
         msg['To'] = to
 
-        self.server.connect(self.host, self.port)
-        self.server.sendmail(fa, [to], msg.as_string())
-        self.server.quit()
+        server = self.server_factory()
+        server.sendmail(fa, [to], msg.as_string())
+        server.quit()
 
 
     def mail_html(self, to, subject, tmplname_txt, tmplname_html, from_addr=None, from_name = None, **kw):
@@ -145,8 +141,8 @@ class MailAPI(object):
         msg.attach(part1)
         msg.attach(part2)
 
-        self.server.connect(self.host, self.port)
-        self.server.sendmail(fa, [to], msg.as_string())
-        self.server.quit()
+        server = self.server_factory()
+        server.sendmail(fa, [to], msg.as_string())
+        server.quit()
 
 
